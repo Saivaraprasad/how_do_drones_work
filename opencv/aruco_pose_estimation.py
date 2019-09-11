@@ -34,13 +34,15 @@ We are going to obtain the following quantities:
 
 """
 
+#Reference : https://github.com/opencv/opencv_contrib/blob/master/modules/aruco/tutorials/aruco_detection/aruco_detection.markdown
+
 import numpy as np
 import cv2
 import cv2.aruco as aruco
 import sys, time, math
 
 #--- Define Tag
-id_to_find  = 72
+id_to_find  = 698
 marker_size  = 10 #- [cm]
 
 
@@ -80,10 +82,13 @@ def rotationMatrixToEulerAngles(R):
 
 
 
-#--- Get the camera calibration path
-calib_path  = ""
-camera_matrix   = np.loadtxt(calib_path+'cameraMatrix_webcam.txt', delimiter=',')
-camera_distortion   = np.loadtxt(calib_path+'cameraDistortion_webcam.txt', delimiter=',')
+#--- Get the camera calibration path  
+calib_path  = "/home/svp/repos/how_do_drones_work/opencv/"
+camera_matrix   = np.loadtxt(calib_path+'cameraMatrix.txt', delimiter=',')
+camera_distortion   = np.loadtxt(calib_path+'cameraDistortion.txt', delimiter=',')
+
+#print camera_matrix
+#print camera_distortion
 
 #--- 180 deg rotation matrix around the x axis
 R_flip  = np.zeros((3,3), dtype=np.float32)
@@ -114,11 +119,11 @@ while True:
     gray    = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) #-- remember, OpenCV stores color images in Blue, Green, Red
 
     #-- Find all the aruco markers in the image
-    corners, ids, rejected = aruco.detectMarkers(image=gray, dictionary=aruco_dict, parameters=parameters,
-                              cameraMatrix=camera_matrix, distCoeff=camera_distortion)
-    
+    print(camera_matrix)
+    corners, ids, rejected = aruco.detectMarkers(image=gray, dictionary=aruco_dict, parameters=parameters) #, distCoeff=camera_distortion, cameraMatrix=camera_matrix)
+
     if ids is not None and ids[0] == id_to_find:
-        
+
         #-- ret = [rvec, tvec, ?]
         #-- array of rotation and position of each marker in camera frame
         #-- rvec = [[rvec_1], [rvec_2], ...]    attitude of the marker respect to camera frame
@@ -129,7 +134,7 @@ while True:
         rvec, tvec = ret[0][0,0,:], ret[1][0,0,:]
 
         #-- Draw the detected marker and put a reference frame over it
-        aruco.drawDetectedMarkers(frame, corners)
+        aruco.drawDetectedMarkers(frame, corners, ids)  #Note that this function is only provided for visualization and its use can be perfectly omitted.
         aruco.drawAxis(frame, camera_matrix, camera_distortion, rvec, tvec, 10)
 
         #-- Print the tag position in camera frame
@@ -175,34 +180,3 @@ while True:
         cap.release()
         cv2.destroyAllWindows()
         break
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
